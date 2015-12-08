@@ -70,7 +70,7 @@ You can also use numpy's `array`, sklearn's `sparse_matrix`, and even pandas' `D
 
 **Don't forget to acknowledge `libFM` (i.e. cite the paper [Factorization Machines with libFM](http://libfm.org/#publications)) if you publish results produced with this software.**
 
-#### FM
+##### FM
 
 ```
 Parameters
@@ -116,7 +116,7 @@ verbose: bool, optional
     Defaults to False.
 ```
 
-#### FM.predict
+##### FM.predict
 ```
 Parameters
 ----------
