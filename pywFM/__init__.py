@@ -48,25 +48,20 @@ class FM:
     verbose: bool, optional
         How much infos to print
         Defaults to False.
+    """
 
-    ### unused libFM flags
-    test: filename for test data [MANDATORY]
-        this is given as attribute for fit
-    train: filename for training data [MANDATORY]
-        this is given as attribute for fit
+    """
+    ### unsused libFM flags
     meta: filename for meta information about data set
         FUTURE WORK
     validation: filename for validation data (only for SGDA)
         FUTURE WORK
-    out: filename for output
-        No need since we output as array
+    rlog: write measurements within iterations to a file; default=''
+        FUTURE WORK
     cache_size: cache size for data storage (only applicable if data is in binary format), default=infty
         datafile is text so we don't need this parameter
     relation: BS - filenames for the relations, default=''
-        FUTURE WORK
-        not dealing with BS extensions
-    rlog: write measurements within iterations to a file; default=''
-        FUTURE WORK
+        not dealing with BS extensions since they are only used for binary files
     """
 
     def __init__(self,
@@ -83,12 +78,8 @@ class FM:
                  r2_regularization = 0,
                  verbose = False):
 
-        if task == 'regression':
-            self.task = 'r'
-        elif task == 'classification':
-            self.task = 'c'
-        else:
-            raise ValueError("Invalid argument: task")
+        # gets first letter of either regression or classification
+        self.task = task[0]
         self.num_iter = num_iter
         self.init_stdev = init_stdev
         self.dim = "%d,%d,%d" % (int(k0), int(k1), k2)
@@ -97,6 +88,7 @@ class FM:
         self.regularization = "%d,%d,%d" % (r0_regularization, r1_regularization, r2_regularization)
         self.verbose = int(verbose)
 
+        # gets real path of package
         self.libfm_path=os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                      "libfm/bin/libFM")
 
@@ -105,11 +97,11 @@ class FM:
 
         Parameters
         ----------
-        x_train : {array-like, sparse matrix}, shape = [n_samples, n_features]
+        x_train : {array-like, matrix}, shape = [n_samples, n_features]
             Training data
         y_train : numpy array of shape [n_samples]
             Target values
-        x_test: {array-like, sparse matrix}, shape = [n_samples, n_features]
+        x_test: {array-like, matrix}, shape = [n_samples, n_features]
             Testing data
 
         Returns
@@ -125,10 +117,11 @@ class FM:
         _,out_path = tempfile.mkstemp()
         _,model_path = tempfile.mkstemp()
 
-        # dump train data
+        # converts train and test data to libSVM format
         dump_svmlight_file(x_train, y_train, train_path)
         dump_svmlight_file(x_test, y_test, test_path)
 
+        # builds arguments array
         args = [self.libfm_path,
                 "-task %s" % self.task,
                 "-train %s" % train_path,
@@ -141,6 +134,7 @@ class FM:
                 "-verbosity %d" % self.verbose,
                 "-save_model %s" % model_path]
 
+        # appends arguments that only work for certain learning methods
         if self.learning_method in ['sgd', 'sgda']:
             args.append("-learn_rate %d" % self.learn_rate)
 
@@ -148,7 +142,7 @@ class FM:
             args.append("-regular '%s'" % self.regularization)
 
         # call libfm with parsed arguments
-        # unkown bug with -dim option, had to concatenate string
+        # unkown bug with "-dim" option on array -- forced to concatenate string
         args = ' '.join(args)
         call(args, shell=True)
 
@@ -158,8 +152,8 @@ class FM:
             out_read = out_file.read()
             preds = [float(p) for p in out_read.split('\n') if p]
 
-        # "hidden" features that allows users to save the model
-        # allows us to get the feature weights
+        # "hidden" feature that allows users to save the model
+        # We use this to get the feature weights
         # https://github.com/srendle/libfm/commit/19db0d1e36490290dadb530a56a5ae314b68da5d
         num_features = x_train.shape[1]
         import itertools

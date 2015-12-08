@@ -30,8 +30,39 @@ pip install pandas
 
 * numpy
 * sklearn
-* subprocess
 
+### Example
+
+Very simple example taken from Steffen Rendle's paper: Factorization Machines with libFM.
+
+```py
+import pywFM
+import numpy as np
+import pandas as pd
+
+features = np.matrix([
+#     Users  |     Movies     |    Movie Ratings   | Time | Last Movies Rated
+#    A  B  C | TI  NH  SW  ST | TI   NH   SW   ST  |      | TI  NH  SW  ST
+    [1, 0, 0,  1,  0,  0,  0,   0.3, 0.3, 0.3, 0,     13,   0,  0,  0,  0 ],
+    [1, 0, 0,  0,  1,  0,  0,   0.3, 0.3, 0.3, 0,     14,   1,  0,  0,  0 ],
+    [1, 0, 0,  0,  0,  1,  0,   0.3, 0.3, 0.3, 0,     16,   0,  1,  0,  0 ],
+    [0, 1, 0,  0,  0,  1,  0,   0,   0,   0.5, 0.5,   5,    0,  0,  0,  0 ],
+    [0, 1, 0,  0,  0,  0,  1,   0,   0,   0.5, 0.5,   8,    0,  0,  1,  0 ],
+    [0, 0, 1,  1,  0,  0,  0,   0.5, 0,   0.5, 0,     9,    0,  0,  0,  0 ],
+    [0, 0, 1,  0,  0,  1,  0,   0.5, 0,   0.5, 0,     12,   1,  0,  0,  0 ]
+])
+target = [5, 3, 1, 4, 5, 1, 5]
+
+fm = pywFM.FM(task='regression', num_iter=5)
+
+# split features and target for train/test
+# first 5 are train, last 2 are test
+preds = fm.predict(features[:5], target[:5], features[5:], target[5:])
+# you can also get the model weights
+weights = fm.weights
+```
+
+You can also use numpy's `array`, sklearn's `sparse_matrix`, and even pandas' `DataFrame` as features input.
 
 ### Usage
 
@@ -98,38 +129,17 @@ array, shape = [n_samples of x_test]
    Predicted target values per element in x_test.
 ```
 
+### Future work
 
-### Example
+* Improve weights return to also return the other values that `save_model` stores
+* Improve the `save_model` / `load_model` so we can have a more defined init-fit-predict cycle
+* Improve model measurements statistics output leveraging on `libFM` metadata information.
+* Include current missing `libFM` options that are not part of `pywFM` model:
+  * meta: filename for meta information about data set
+  * validation: filename for validation data (only for SGDA)
+  * rlog: write measurements within iterations to a file
 
-Very simple example taken from Steffen Rendle's paper: Factorization Machines with libFM.
-
-```py
-import pywFM
-import numpy as np
-import pandas as pd
-
-features = np.matrix([
-#     Users  |     Movies     |    Movie Ratings   | Time | Last Movies Rated
-#    A  B  C | TI  NH  SW  ST | TI   NH   SW   ST  |      | TI  NH  SW  ST
-    [1, 0, 0,  1,  0,  0,  0,   0.3, 0.3, 0.3, 0,     13,   0,  0,  0,  0 ],
-    [1, 0, 0,  0,  1,  0,  0,   0.3, 0.3, 0.3, 0,     14,   1,  0,  0,  0 ],
-    [1, 0, 0,  0,  0,  1,  0,   0.3, 0.3, 0.3, 0,     16,   0,  1,  0,  0 ],
-    [0, 1, 0,  0,  0,  1,  0,   0,   0,   0.5, 0.5,   5,    0,  0,  0,  0 ],
-    [0, 1, 0,  0,  0,  0,  1,   0,   0,   0.5, 0.5,   8,    0,  0,  1,  0 ],
-    [0, 0, 1,  1,  0,  0,  0,   0.5, 0,   0.5, 0,     9,    0,  0,  0,  0 ],
-    [0, 0, 1,  0,  0,  1,  0,   0.5, 0,   0.5, 0,     12,   1,  0,  0,  0 ]
-])
-target = [5, 3, 1, 4, 5, 1, 5]
-
-fm = pywFM.FM(task='regression', num_iter=5)
-
-# split features and target for train/test
-# first 5 are train, last 2 are test
-preds = fm.predict(features[:5], target[:5], features[5:], target[5:])
-print preds
-```
-
-You can also use numpy's array, sklearn's `sparse_matrix`, and even pandas' `DataFrame` as features input.
+*I'm no factorization machine expert, so this library was just an effort to have `libFM` as fast as possible in Python. Feel free to suggest features, enhancements; to point out issues; and of course, to post PR.*
 
 ### License
 
