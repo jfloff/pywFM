@@ -13,7 +13,7 @@ For more information regarding Factorization machines and libFM, read Steffen Re
 ### Motivation
 While using Python implementations of Factorization Machines, I felt that the current implementations ([pyFM](https://github.com/coreylynch/pyFM) and [fastFM](https://github.com/ibayer/fastFM/)) had many *[f](https://github.com/coreylynch/pyFM/issues/3)l[a](https://github.com/ibayer/fastFM/blob/master/examples/warm_start_als.py#L45)w[s](https://github.com/ibayer/fastFM/issues/13)*. Then I though, why re-invent the wheel? Why not use the original libFM?
 
-Sure, it's not Python native yada yada ... But atleast we have a bulletproof, battle-tested implementation that we can guide ourselves with.
+Sure, it's not Python native yada yada ... But at least we have a bulletproof, battle-tested implementation that we can guide ourselves with.
 
 ### Installing
 Binary installers for the latest released version are available at the Python package index: http://pypi.python.org/pypi/pywFM/
@@ -139,9 +139,9 @@ array, shape = [n_samples of x_test]
 * Improve the `save_model` / `load_model` so we can have a more defined init-fit-predict cycle
 * Improve model measurements statistics output leveraging on `libFM` metadata information.
 * Include current missing `libFM` options that are not part of `pywFM` model:
-  * meta: filename for meta information about data set
-  * validation: filename for validation data (only for SGDA)
-  * rlog: write measurements within iterations to a file
+  * `meta`: filename for meta information about data set
+  * `validation`: filename for validation data (only for SGDA)
+  * `rlog`: write measurements within iterations to a file
 
 *I'm no factorization machine expert, so this library was just an effort to have `libFM` as fast as possible in Python. Feel free to suggest features, enhancements; to point out issues; and of course, to post PR.*
 
