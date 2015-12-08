@@ -7,6 +7,8 @@ pywFM is a Python wrapper for Steffen Rendle's [libFM](http://libfm.org/). libFM
 
 For more information regarding Factorization machines and libFM, read Steffen Rendle's paper: [Factorization Machines with libFM, in ACM Trans. Intell. Syst. Technol., 3(3), May. 2012](http://www.csie.ntu.edu.tw/~b97053/paper/Factorization%20Machines%20with%20libFM.pdf)
 
+**Don't forget to acknowledge `libFM` (i.e. cite the paper [Factorization Machines with libFM](http://libfm.org/#publications)) if you publish results produced with this software.**
+
 
 ### Motivation
 While using Python implementations of Factorization Machines, I felt that the current implementations ([pyFM](https://github.com/coreylynch/pyFM) and [fastFM](https://github.com/ibayer/fastFM/)) had many *[f](https://github.com/coreylynch/pyFM/issues/3)l[a](https://github.com/ibayer/fastFM/blob/master/examples/warm_start_als.py#L45)w[s](https://github.com/ibayer/fastFM/issues/13)*. Then I though, why re-invent the wheel? Why not use the original libFM?
@@ -65,6 +67,8 @@ weights = fm.weights
 You can also use numpy's `array`, sklearn's `sparse_matrix`, and even pandas' `DataFrame` as features input.
 
 ### Usage
+
+**Don't forget to acknowledge `libFM` (i.e. cite the paper [Factorization Machines with libFM](http://libfm.org/#publications)) if you publish results produced with this software.**
 
 #### FM
 
