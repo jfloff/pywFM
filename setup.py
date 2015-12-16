@@ -28,7 +28,7 @@ class PywfmDevelop(develop):
         develop.run(self)
 
 setup(name='pywFM',
-      version='0.4',
+      version='0.5',
       description='Python wrapper for libFM',
       long_description='Python wrapper for the official libFM (http://libfm.org/)',
       classifiers=[
