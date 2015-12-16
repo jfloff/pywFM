@@ -116,6 +116,8 @@ class FM:
         _,test_path = tempfile.mkstemp()
         _,out_path = tempfile.mkstemp()
         _,model_path = tempfile.mkstemp()
+        # out_path = "~/home/yelp"
+        # model_path = "~/home/yelp"
 
         # converts train and test data to libSVM format
         dump_svmlight_file(x_train, y_train, train_path)

@@ -145,6 +145,26 @@ array, shape = [n_samples of x_test]
 
 *I'm no factorization machine expert, so this library was just an effort to have `libFM` as fast as possible in Python. Feel free to suggest features, enhancements; to point out issues; and of course, to post PR.*
 
+
+### Docker
+This repository includes `Dockerfile` for development and for running `pywFM`.
+
+* Run `pywFM` examples ([Dockerfile](examples/Dockerfile)): if you are only interested in running the examples. `Dockerfile` defaults to the `simple.py` example (the one in this README).
+```shell
+# to build image
+docker build --rm=true -t jfloff/pywfm-run .
+# to run image
+docker run --rm -v "$(pwd)":/home/pywfm-run -w /home/pywfm-run -ti jfloff/pywfm-run
+```
+
+* Development of `pywFM` ([Dockerfile](Dockerfile)): useful if you want to make changes to the repo. `Dockerfile` defaults to bash for easier development.
+```shell
+# to build image
+docker build --rm=true -t jfloff/pywfm-dev .
+# to run image
+docker run --rm -v "$(pwd)":/home/pywfm-dev -w /home/pywfm-dev -ti jfloff/pywfm-dev
+```
+
 ### License
 
 MIT (see LICENSE.md file)

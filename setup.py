@@ -1,19 +1,34 @@
+# http://python-packaging-user-guide.readthedocs.org/en/latest/distributing/#uploading-your-project-to-pypi
+# to publish package:
+# 1) python setup.py register
+# 2) python setup.py sdist bdist_wheel upload
+
 from setuptools import setup
 from setuptools.command.install import install
+from setuptools.command.develop import develop
 
 def readme():
     with open('README.md') as f:
         return f.read()
 
-class Installer(install):
+def install_libfm():
+    import subprocess
+    subprocess.call('rm -rf pywFM/libfm', shell=True)
+    subprocess.call('git clone https://github.com/srendle/libfm pywFM/libfm', shell=True)
+    subprocess.call('cd pywFM/libfm && make', shell=True)
 
+class PywfmInstall(install):
     def run(self):
-        import subprocess
-        subprocess.call(['./install-libfm.sh'])
+        install_libfm()
         install.run(self)
 
+class PywfmDevelop(develop):
+    def run(self):
+        install_libfm()
+        develop.run(self)
+
 setup(name='pywFM',
-      version='0.3',
+      version='0.4',
       description='Python wrapper for libFM',
       long_description='Python wrapper for the official libFM (http://libfm.org/)',
       classifiers=[
@@ -30,10 +45,14 @@ setup(name='pywFM',
       packages=['pywFM'],
       install_requires=[
         'numpy',
+        'scipy',
         'sklearn'
       ],
       zip_safe=False,
-      cmdclass={'install': Installer},
+      cmdclass={
+        'install': PywfmInstall,
+        'develop': PywfmDevelop
+      },
       package_data={
         'pywFM': ['libfm/bin/*']
       })
