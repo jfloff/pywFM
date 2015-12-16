@@ -18,20 +18,16 @@ Sure, it's not Python native yada yada ... But at least we have a bulletproof, b
 ### Installing
 Binary installers for the latest released version are available at the Python package index: http://pypi.python.org/pypi/pywFM/
 
-And via `easy_install`:
+And via `pip`:
 ```shell
-easy_install pandas
-```
-
-or `pip`:
-```shell
-pip install pandas
+pip install pywFM
 ```
 
 ### Dependencies
-
 * numpy
+* scipy
 * sklearn
+* pandas
 
 ### Example
 
@@ -59,18 +55,19 @@ fm = pywFM.FM(task='regression', num_iter=5)
 
 # split features and target for train/test
 # first 5 are train, last 2 are test
-preds = fm.predict(features[:5], target[:5], features[5:], target[5:])
+model = fm.run(features[:5], target[:5], features[5:], target[5:])
+print model.predictions
 # you can also get the model weights
-weights = fm.weights
+print model.weights
 ```
 
 You can also use numpy's `array`, sklearn's `sparse_matrix`, and even pandas' `DataFrame` as features input.
 
 ### Usage
 
-**Don't forget to acknowledge `libFM` (i.e. cite the paper [Factorization Machines with libFM](http://libfm.org/#publications)) if you publish results produced with this software.**
+*Don't forget to acknowledge `libFM` (i.e. cite the paper [Factorization Machines with libFM](http://libfm.org/#publications)) if you publish results produced with this software.*
 
-##### FM
+##### **`FM`**: Class that wraps `libFM` parameters. For more information read [libFM manual](http://www.libfm.org/libfm-1.42.manual.pdf)
 
 ```
 Parameters
@@ -116,35 +113,35 @@ verbose: bool, optional
     Defaults to False.
 ```
 
-##### FM.predict
+##### **`FM.run`**: run factorization machine model against train and test data
 ```
+
 Parameters
 ----------
-x_train : {array-like, sparse matrix}, shape = [n_samples, n_features]
+x_train : {array-like, matrix}, shape = [n_train, n_features]
     Training data
-y_train : numpy array of shape [n_samples]
+y_train : numpy array of shape [n_train]
     Target values
-x_test: {array-like, sparse matrix}, shape = [n_samples, n_features]
+x_test: {array-like, matrix}, shape = [n_test, n_features]
     Testing data
+y_test : numpy array of shape [n_test]
+    Testing target values
 
-Returns
+Return
 -------
-array, shape = [n_samples of x_test]
+Returns `namedtuple` with the following properties:
+
+predictions: array [n_samples of x_test]
    Predicted target values per element in x_test.
+global_bias: float
+    If k0 is True, returns the model's global bias w0
+weights: array [n_features]
+    If k1 is True, returns the model's weights for each features Wj
+pairwise_interactions: numpy matrix [n_features x k2]
+    Matrix with pairwise interactions Vj,f
+rlog: pandas dataframe [nrow = num_iter]
+    `pandas` DataFrame with measurements about each iteration
 ```
-
-### Future work
-
-* Improve weights return to also return the other values that `save_model` stores
-* Improve the `save_model` / `load_model` so we can have a more defined init-fit-predict cycle
-* Improve model measurements statistics output leveraging on `libFM` metadata information.
-* Include current missing `libFM` options that are not part of `pywFM` model:
-  * `meta`: filename for meta information about data set
-  * `validation`: filename for validation data (only for SGDA)
-  * `rlog`: write measurements within iterations to a file
-
-*I'm no factorization machine expert, so this library was just an effort to have `libFM` as fast as possible in Python. Feel free to suggest features, enhancements; to point out issues; and of course, to post PR.*
-
 
 ### Docker
 This repository includes `Dockerfile` for development and for running `pywFM`.
@@ -164,6 +161,17 @@ docker build --rm=true -t jfloff/pywfm-dev .
 # to run image
 docker run --rm -v "$(pwd)":/home/pywfm-dev -w /home/pywfm-dev -ti jfloff/pywfm-dev
 ```
+
+
+### Future work
+
+* Improve the `save_model` / `load_model` so we can have a more defined init-fit-predict cycle
+* Include current missing `libFM` options that are not part of `pywFM` model:
+  * `meta`: filename for meta information about data set
+  * `validation`: filename for validation data (only for SGDA)
+
+*I'm no factorization machine expert, so this library was just an effort to have `libFM` as fast as possible in Python. Feel free to suggest features, enhancements; to point out issues; and of course, to post PRs.*
+
 
 ### License
 

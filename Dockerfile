@@ -19,5 +19,5 @@ RUN pip install numpy \
 # since we will be "always" mounting the volume, we can set this up
 WORKDIR /home/pywFM
 
-# start init script and bash right after
-CMD /bin/bash
+# install package in development mode at the begining
+CMD pip install -e . && /bin/bash

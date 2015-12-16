@@ -46,7 +46,8 @@ setup(name='pywFM',
       install_requires=[
         'numpy',
         'scipy',
-        'sklearn'
+        'scikit-learn',
+        'pandas'
       ],
       zip_safe=False,
       cmdclass={
@@ -54,5 +55,5 @@ setup(name='pywFM',
         'develop': PywfmDevelop
       },
       package_data={
-        'pywFM': ['libfm/bin/*']
+        'pywFM': ['libfm/bin/libFM']
       })

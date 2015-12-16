@@ -3,8 +3,8 @@ import os
 import tempfile
 
 class FM:
-    """ libFM wrapper. For more information regarding the parameters read
-    libFM manual at http://www.libfm.org/libfm-1.42.manual.pdf
+    """ Class that wraps `libFM` parameters. For more information read
+    [libFM manual](http://www.libfm.org/libfm-1.42.manual.pdf)
 
     Parameters
     ----------
@@ -56,8 +56,6 @@ class FM:
         FUTURE WORK
     validation: filename for validation data (only for SGDA)
         FUTURE WORK
-    rlog: write measurements within iterations to a file; default=''
-        FUTURE WORK
     cache_size: cache size for data storage (only applicable if data is in binary format), default=infty
         datafile is text so we don't need this parameter
     relation: BS - filenames for the relations, default=''
@@ -79,35 +77,47 @@ class FM:
                  verbose = False):
 
         # gets first letter of either regression or classification
-        self.task = task[0]
-        self.num_iter = num_iter
-        self.init_stdev = init_stdev
-        self.dim = "%d,%d,%d" % (int(k0), int(k1), k2)
-        self.learning_method = learning_method
-        self.learn_rate = learn_rate
-        self.regularization = "%d,%d,%d" % (r0_regularization, r1_regularization, r2_regularization)
-        self.verbose = int(verbose)
+        self.__task = task[0]
+        self.__num_iter = num_iter
+        self.__init_stdev = init_stdev
+        self.__dim = "%d,%d,%d" % (int(k0), int(k1), k2)
+        self.__learning_method = learning_method
+        self.__learn_rate = learn_rate
+        self.__regularization = "%d,%d,%d" % (r0_regularization, r1_regularization, r2_regularization)
+        self.__verbose = int(verbose)
 
         # gets real path of package
-        self.libfm_path=os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                     "libfm/bin/libFM")
+        self.__libfm_path=os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                       "libfm/bin/libFM")
 
-    def predict(self, x_train, y_train, x_test, y_test):
-        """Predict using the factorization machine
+    def run(self, x_train, y_train, x_test, y_test):
+        """Run factorization machine model against train and test data
 
         Parameters
         ----------
-        x_train : {array-like, matrix}, shape = [n_samples, n_features]
+        x_train : {array-like, matrix}, shape = [n_train, n_features]
             Training data
-        y_train : numpy array of shape [n_samples]
+        y_train : numpy array of shape [n_train]
             Target values
-        x_test: {array-like, matrix}, shape = [n_samples, n_features]
+        x_test: {array-like, matrix}, shape = [n_test, n_features]
             Testing data
+        y_test : numpy array of shape [n_test]
+            Testing target values
 
-        Returns
+        Return
         -------
-        array, shape = [n_samples of x_test]
+        Returns `namedtuple` with the following properties:
+
+        predictions: array [n_samples of x_test]
            Predicted target values per element in x_test.
+        global_bias: float
+            If k0 is True, returns the model's global bias w0
+        weights: array [n_features]
+            If k1 is True, returns the model's weights for each features Wj
+        pairwise_interactions: numpy matrix [n_features x k2]
+            Matrix with pairwise interactions Vj,f
+        rlog: pandas dataframe [nrow = num_iter]
+            `pandas` DataFrame with measurements about each iteration
         """
 
         from sklearn.datasets import dump_svmlight_file
@@ -116,32 +126,32 @@ class FM:
         _,test_path = tempfile.mkstemp()
         _,out_path = tempfile.mkstemp()
         _,model_path = tempfile.mkstemp()
-        # out_path = "~/home/yelp"
-        # model_path = "~/home/yelp"
+        _,rlog_path = tempfile.mkstemp()
 
         # converts train and test data to libSVM format
         dump_svmlight_file(x_train, y_train, train_path)
         dump_svmlight_file(x_test, y_test, test_path)
 
         # builds arguments array
-        args = [self.libfm_path,
-                "-task %s" % self.task,
+        args = [self.__libfm_path,
+                "-task %s" % self.__task,
                 "-train %s" % train_path,
                 "-test %s" % test_path,
-                "-dim '%s'" % self.dim,
-                "-init_stdev %g" % self.init_stdev,
-                "-iter %d" % self.num_iter,
-                "-method %s" % self.learning_method,
+                "-dim '%s'" % self.__dim,
+                "-init_stdev %g" % self.__init_stdev,
+                "-iter %d" % self.__num_iter,
+                "-method %s" % self.__learning_method,
                 "-out %s" % out_path,
-                "-verbosity %d" % self.verbose,
-                "-save_model %s" % model_path]
+                "-verbosity %d" % self.__verbose,
+                "-save_model %s" % model_path,
+                "-rlog %s" % rlog_path]
 
         # appends arguments that only work for certain learning methods
-        if self.learning_method in ['sgd', 'sgda']:
-            args.append("-learn_rate %d" % self.learn_rate)
+        if self.__learning_method in ['sgd', 'sgda']:
+            args.append("-learn_rate %d" % self.__learn_rate)
 
-        if self.learning_method in ['sgd', 'sgda', 'als']:
-            args.append("-regular '%s'" % self.regularization)
+        if self.__learning_method in ['sgd', 'sgda', 'als']:
+            args.append("-regular '%s'" % self.__regularization)
 
         # call libfm with parsed arguments
         # unkown bug with "-dim" option on array -- forced to concatenate string
@@ -158,14 +168,35 @@ class FM:
         # We use this to get the feature weights
         # https://github.com/srendle/libfm/commit/19db0d1e36490290dadb530a56a5ae314b68da5d
         num_features = x_train.shape[1]
-        import itertools
-        with open(model_path, 'r') as model_file:
-            self.weights = [float(w) for w in itertools.islice(model_file, 3, num_features-1)]
+        import numpy as np
+        model_file = open(model_path).read()
+        model_enum = enumerate(model_file.split('\n'))
+        global_bias = weights = pairwise_interactions = None
+        for num, line in model_enum:
+            if "#global bias W0" in line:
+                # gets next item value
+                global_bias = float(next(model_enum)[1])
+            elif "#unary interactions Wj" in line:
+                weights = [float(next(model_enum)[1]) for w in range(num_features-1)]
+            elif "#pairwise interactions Vj,f" in line:
+                pairwise_interactions = np.matrix([float(x) for x in next(model_enum)[1].split(' ') for w in range(num_features-1)])
+
+        # parses rlog into
+        import pandas as pd
+        rlog = pd.read_csv(rlog_path, sep='\t')
 
         # removes temporary output file after using
         os.remove(train_path)
         os.remove(test_path)
         os.remove(out_path)
         os.remove(model_path)
+        os.remove(rlog_path)
 
-        return preds
+        # return as named collection for multiple output
+        import collections
+        fm = collections.namedtuple('model', ['predictions',
+                                              'global_bias',
+                                              'weights',
+                                              'pairwise_interactions',
+                                              'rlog'])
+        return fm(preds, global_bias, weights, pairwise_interactions, rlog)
