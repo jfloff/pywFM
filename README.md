@@ -164,8 +164,9 @@ docker run --rm -v "$(pwd)":/home/pywfm-dev -w /home/pywfm-dev -ti jfloff/pywfm-
 
 
 ### Future work
-
-* Improve the `save_model` / `load_model` so we can have a more defined init-fit-predict cycle
+* Migrate to Python3
+* Add `silent` option to supress all `libFM` command line output
+* Improve the `save_model` / `load_model` so we can have a more defined init-fit-predict cycle (perhaps we could inherit from [sklearn.BaseEstimator](http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html))
 * Include current missing `libFM` options that are not part of `pywFM` model:
   * `meta`: filename for meta information about data set
   * `validation`: filename for validation data (only for SGDA)
