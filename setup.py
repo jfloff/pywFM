@@ -2,6 +2,7 @@
 # to publish package:
 # 1) python setup.py register
 # 2) python setup.py sdist bdist_wheel upload
+# 3) Convert pypi documentation (http://devotter.com/converter)
 
 from setuptools import setup
 from setuptools.command.install import install
@@ -28,7 +29,7 @@ class PywfmDevelop(develop):
         develop.run(self)
 
 setup(name='pywFM',
-      version='0.5',
+      version='0.6',
       description='Python wrapper for libFM',
       long_description='Python wrapper for the official libFM (http://libfm.org/)',
       classifiers=[
