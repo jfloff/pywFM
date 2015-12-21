@@ -184,4 +184,4 @@ docker run --rm -v "$(pwd)":/home/pywfm-dev -w /home/pywfm-dev -ti jfloff/pywfm-
 
 ### License
 
-MIT (see LICENSE.md file)
+MIT (see LICENSE.txt file)

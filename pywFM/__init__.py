@@ -137,10 +137,10 @@ class FM:
 
         from sklearn.datasets import dump_svmlight_file
 
-        _,train_path = tempfile.mkstemp(dir=self.__temp_path)
-        _,test_path = tempfile.mkstemp(dir=self.__temp_path)
-        _,out_path = tempfile.mkstemp(dir=self.__temp_path)
-        _,model_path = tempfile.mkstemp(dir=self.__temp_path)
+        train_fd,train_path = tempfile.mkstemp(dir=self.__temp_path)
+        test_fd,test_path = tempfile.mkstemp(dir=self.__temp_path)
+        out_fd,out_path = tempfile.mkstemp(dir=self.__temp_path)
+        model_fd,model_path = tempfile.mkstemp(dir=self.__temp_path)
 
         # converts train and test data to libSVM format
         dump_svmlight_file(x_train, y_train, train_path)
@@ -161,7 +161,7 @@ class FM:
 
         # appends rlog if true
         if self.__rlog:
-            _,rlog_path = tempfile.mkstemp(dir=self.__temp_path)
+            rlog_fd,rlog_path = tempfile.mkstemp(dir=self.__temp_path)
             args.append("-rlog %s" % rlog_path)
 
         # appends arguments that only work for certain learning methods
@@ -208,15 +208,20 @@ class FM:
             # parses rlog into
             import pandas as pd
             rlog = pd.read_csv(rlog_path, sep='\t')
+            os.close(rlog_fd)
             os.remove(rlog_path)
         else:
             rlog = None
 
         # removes temporary output file after using
+        os.close(train_fd)
         os.remove(train_path)
+        os.close(test_fd)
         os.remove(test_path)
-        os.remove(out_path)
+        os.close(model_fd)
         os.remove(model_path)
+        os.close(out_fd)
+        os.remove(out_path)
 
         # return as named collection for multiple output
         import collections
