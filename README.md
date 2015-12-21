@@ -16,12 +16,12 @@ While using Python implementations of Factorization Machines, I felt that the cu
 Sure, it's not Python native yada yada ... But at least we have a bulletproof, battle-tested implementation that we can guide ourselves with.
 
 ### Installing
-Binary installers for the latest released version are available at the Python package index: http://pypi.python.org/pypi/pywFM/
-
-And via `pip`:
+`pywFM` was develop for Python 2.7 (feel free to PR a Python 3 transition). Install using `pip`:
 ```shell
 pip install pywFM
 ```
+
+Binary installers for the latest released version are available at the [Python package index](http://pypi.python.org/pypi/pywFM/).
 
 ### Dependencies
 * numpy
@@ -108,9 +108,18 @@ r1_regularization: int, optional
 r2_regularization: int, optional
     2-way regularization for SGD and ALS
     Defaults to 0
+rlog: bool, optional
+    Enable/disable rlog output
+    Defaults to True.
 verbose: bool, optional
     How much infos to print
     Defaults to False.
+silent: bool, optional
+    Completly silences all libFM output
+    Defaults to False.
+temp_path: string, optional
+    Sets path for libFM temporary files. Usefull when dealing with large data.
+    Defaults to None (default mkstemp behaviour)
 ```
 
 ##### **`FM.run`**: run factorization machine model against train and test data
@@ -165,7 +174,6 @@ docker run --rm -v "$(pwd)":/home/pywfm-dev -w /home/pywfm-dev -ti jfloff/pywfm-
 
 ### Future work
 * Migrate to Python3
-* Add `silent` option to supress all `libFM` command line output
 * Improve the `save_model` / `load_model` so we can have a more defined init-fit-predict cycle (perhaps we could inherit from [sklearn.BaseEstimator](http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html))
 * Include current missing `libFM` options that are not part of `pywFM` model:
   * `meta`: filename for meta information about data set

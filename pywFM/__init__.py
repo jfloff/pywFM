@@ -45,9 +45,18 @@ class FM:
     r2_regularization: int, optional
         2-way regularization for SGD and ALS
         Defaults to 0
+    rlog: bool, optional
+        Enable/disable rlog output
+        Defaults to True.
     verbose: bool, optional
         How much infos to print
         Defaults to False.
+    silent: bool, optional
+        Completly silences all libFM output
+        Defaults to False.
+    temp_path: string, optional
+        Sets path for libFM temporary files. Usefull when dealing with large data.
+        Defaults to None (default mkstemp behaviour)
     """
 
     """
@@ -74,7 +83,10 @@ class FM:
                  r0_regularization = 0,
                  r1_regularization = 0,
                  r2_regularization = 0,
-                 verbose = False):
+                 rlog = True,
+                 verbose = False,
+                 silent = False,
+                 temp_path = None):
 
         # gets first letter of either regression or classification
         self.__task = task[0]
@@ -84,7 +96,10 @@ class FM:
         self.__learning_method = learning_method
         self.__learn_rate = learn_rate
         self.__regularization = "%d,%d,%d" % (r0_regularization, r1_regularization, r2_regularization)
+        self.__rlog = rlog
         self.__verbose = int(verbose)
+        self.__silent = silent
+        self.__temp_path = temp_path
 
         # gets real path of package
         self.__libfm_path=os.path.join(os.path.dirname(os.path.realpath(__file__)),
@@ -122,11 +137,10 @@ class FM:
 
         from sklearn.datasets import dump_svmlight_file
 
-        _,train_path = tempfile.mkstemp()
-        _,test_path = tempfile.mkstemp()
-        _,out_path = tempfile.mkstemp()
-        _,model_path = tempfile.mkstemp()
-        _,rlog_path = tempfile.mkstemp()
+        _,train_path = tempfile.mkstemp(dir=self.__temp_path)
+        _,test_path = tempfile.mkstemp(dir=self.__temp_path)
+        _,out_path = tempfile.mkstemp(dir=self.__temp_path)
+        _,model_path = tempfile.mkstemp(dir=self.__temp_path)
 
         # converts train and test data to libSVM format
         dump_svmlight_file(x_train, y_train, train_path)
@@ -143,8 +157,12 @@ class FM:
                 "-method %s" % self.__learning_method,
                 "-out %s" % out_path,
                 "-verbosity %d" % self.__verbose,
-                "-save_model %s" % model_path,
-                "-rlog %s" % rlog_path]
+                "-save_model %s" % model_path]
+
+        # appends rlog if true
+        if self.__rlog:
+            _,rlog_path = tempfile.mkstemp(dir=self.__temp_path)
+            args.append("-rlog %s" % rlog_path)
 
         # appends arguments that only work for certain learning methods
         if self.__learning_method in ['sgd', 'sgda']:
@@ -152,6 +170,10 @@ class FM:
 
         if self.__learning_method in ['sgd', 'sgda', 'als']:
             args.append("-regular '%s'" % self.__regularization)
+
+        # if silent redirects all output
+        if self.__silent:
+            args.append(" &> /dev/null")
 
         # call libfm with parsed arguments
         # unkown bug with "-dim" option on array -- forced to concatenate string
@@ -181,16 +203,20 @@ class FM:
             elif "#pairwise interactions Vj,f" in line:
                 pairwise_interactions = np.matrix([float(x) for x in next(model_enum)[1].split(' ') for w in range(num_features-1)])
 
-        # parses rlog into
-        import pandas as pd
-        rlog = pd.read_csv(rlog_path, sep='\t')
+        # parses rlog into dataframe
+        if self.__rlog:
+            # parses rlog into
+            import pandas as pd
+            rlog = pd.read_csv(rlog_path, sep='\t')
+            os.remove(rlog_path)
+        else:
+            rlog = None
 
         # removes temporary output file after using
         os.remove(train_path)
         os.remove(test_path)
         os.remove(out_path)
         os.remove(model_path)
-        os.remove(rlog_path)
 
         # return as named collection for multiple output
         import collections
