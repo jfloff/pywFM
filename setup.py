@@ -8,10 +8,6 @@ from setuptools import setup
 from setuptools.command.install import install
 from setuptools.command.develop import develop
 
-def readme():
-    with open('README.md') as f:
-        return f.read()
-
 def install_libfm():
     import subprocess
     subprocess.call('rm -rf pywFM/libfm', shell=True)
@@ -29,7 +25,7 @@ class PywfmDevelop(develop):
         develop.run(self)
 
 setup(name='pywFM',
-      version='0.7.3',
+      version='0.7.4',
       description='Python wrapper for libFM',
       classifiers=[
         'Development Status :: 3 - Alpha',
