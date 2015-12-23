@@ -142,8 +142,6 @@ class FM:
         out_fd,out_path = tempfile.mkstemp(dir=self.__temp_path)
         model_fd,model_path = tempfile.mkstemp(dir=self.__temp_path)
 
-        print "MODEL PATH = %s" % model_path
-
         # converts train and test data to libSVM format
         dump_svmlight_file(x_train, y_train, train_path)
         dump_svmlight_file(x_test, y_test, test_path)
