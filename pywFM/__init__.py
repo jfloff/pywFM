@@ -142,6 +142,8 @@ class FM:
         out_fd,out_path = tempfile.mkstemp(dir=self.__temp_path)
         model_fd,model_path = tempfile.mkstemp(dir=self.__temp_path)
 
+        print "MODEL PATH = %s" % model_path
+
         # converts train and test data to libSVM format
         dump_svmlight_file(x_train, y_train, train_path)
         dump_svmlight_file(x_test, y_test, test_path)
@@ -189,19 +191,29 @@ class FM:
         # "hidden" feature that allows users to save the model
         # We use this to get the feature weights
         # https://github.com/srendle/libfm/commit/19db0d1e36490290dadb530a56a5ae314b68da5d
-        num_features = x_train.shape[1]
         import numpy as np
-        model_file = open(model_path).read()
-        model_enum = enumerate(model_file.split('\n'))
-        global_bias = weights = pairwise_interactions = None
-        for num, line in model_enum:
-            if "#global bias W0" in line:
-                # gets next item value
-                global_bias = float(next(model_enum)[1])
-            elif "#unary interactions Wj" in line:
-                weights = [float(next(model_enum)[1]) for w in range(num_features-1)]
-            elif "#pairwise interactions Vj,f" in line:
-                pairwise_interactions = np.matrix([float(x) for x in next(model_enum)[1].split(' ') for w in range(num_features-1)])
+        global_bias = None
+        weights = []
+        pairwise_interactions = []
+        # if 0 its global bias; if 1, weights; if 2, pairwise interactions
+        out_iter = 0
+        with open(model_path) as f:
+            for line in f.read().splitlines():
+                # checks which line is starting with #
+                if line.startswith('#'):
+                    if "#global bias W0" in line: out_iter = 0
+                    elif "#unary interactions Wj" in line: out_iter = 1
+                    elif "#pairwise interactions Vj,f" in line: out_iter = 2
+                else:
+                    # check context get in previous step and adds accordingly
+                    if out_iter == 0:
+                        global_bias = float(line)
+                    elif out_iter == 1:
+                        weights.append(float(line))
+                    elif out_iter == 2:
+                        pairwise_interactions.append([float(x) for x in line.split(' ')])
+
+        pairwise_interactions = np.matrix(pairwise_interactions)
 
         # parses rlog into dataframe
         if self.__rlog:
