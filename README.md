@@ -135,8 +135,10 @@ x_test: {array-like, matrix}, shape = [n_test, n_features]
     Testing data
 y_test : numpy array of shape [n_test]
     Testing target values
-validation_set: optional, {array-like, matrix}, shape = [n_train, n_features]
-  Validation data (only for SGDA)
+x_validation_set: optional, {array-like, matrix}, shape = [n_train, n_features]
+    Validation data (only for SGDA)
+y_validation_set: optional, numpy array of shape [n_train]
+    Validation target data (only for SGDA)
 
 Return
 -------

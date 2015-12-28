@@ -103,7 +103,7 @@ class FM:
         self.__libfm_path=os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                        "libfm/bin/libFM")
 
-    def run(self, x_train, y_train, x_test, y_test, validation_set=None):
+    def run(self, x_train, y_train, x_test, y_test, x_validation_set=None, y_validation_set=None):
         """Run factorization machine model against train and test data
 
         Parameters
@@ -116,8 +116,10 @@ class FM:
             Testing data
         y_test : numpy array of shape [n_test]
             Testing target values
-        validation_set: optional, {array-like, matrix}, shape = [n_train, n_features]
+        x_validation_set: optional, {array-like, matrix}, shape = [n_train, n_features]
             Validation data (only for SGDA)
+        y_validation_set: optional, numpy array of shape [n_train]
+            Validation target data (only for SGDA)
 
         Return
         -------
@@ -173,8 +175,9 @@ class FM:
 
         # adds validation if sgda
         # if validation_set is none, libFM will throw error hence, I'm not doing any validation
-        if self.__learning_method == 'sgda' and validation_set is not None:
+        if self.__learning_method == 'sgda' and (x_validation_set is not None and y_validation_set is not None):
             validation_fd,validation_path = tempfile.mkstemp(dir=self.__temp_path)
+            dump_svmlight_file(x_validation_set, y_validation_set, validation_path)
             args.append("-validation %s" % validation_path)
 
         # if silent redirects all output
@@ -230,7 +233,7 @@ class FM:
             rlog = None
 
         # adds validation if sgda
-        if self.__learning_method == 'sgda' and validation_set is not None:
+        if self.__learning_method == 'sgda' and (x_validation_set is not None and y_validation_set is not None):
             os.close(validation_fd)
             os.remove(validation_path)
 
