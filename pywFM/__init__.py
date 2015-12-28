@@ -63,8 +63,6 @@ class FM:
     ### unsused libFM flags
     meta: filename for meta information about data set
         FUTURE WORK
-    validation: filename for validation data (only for SGDA)
-        FUTURE WORK
     cache_size: cache size for data storage (only applicable if data is in binary format), default=infty
         datafile is text so we don't need this parameter
     relation: BS - filenames for the relations, default=''
@@ -105,7 +103,7 @@ class FM:
         self.__libfm_path=os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                        "libfm/bin/libFM")
 
-    def run(self, x_train, y_train, x_test, y_test):
+    def run(self, x_train, y_train, x_test, y_test, validation_set=None):
         """Run factorization machine model against train and test data
 
         Parameters
@@ -118,6 +116,8 @@ class FM:
             Testing data
         y_test : numpy array of shape [n_test]
             Testing target values
+        validation_set: optional, {array-like, matrix}, shape = [n_train, n_features]
+            Validation data (only for SGDA)
 
         Return
         -------
@@ -171,6 +171,12 @@ class FM:
         if self.__learning_method in ['sgd', 'sgda', 'als']:
             args.append("-regular '%s'" % self.__regularization)
 
+        # adds validation if sgda
+        # if validation_set is none, libFM will throw error hence, I'm not doing any validation
+        if self.__learning_method == 'sgda' and validation_set is not None:
+            validation_fd,validation_path = tempfile.mkstemp(dir=self.__temp_path)
+            args.append("-validation %s" % validation_path)
+
         # if silent redirects all output
         if self.__silent:
             args.append(" &> /dev/null")
@@ -222,6 +228,11 @@ class FM:
             os.remove(rlog_path)
         else:
             rlog = None
+
+        # adds validation if sgda
+        if self.__learning_method == 'sgda' and validation_set is not None:
+            os.close(validation_fd)
+            os.remove(validation_path)
 
         # removes temporary output file after using
         os.close(train_fd)

@@ -135,6 +135,8 @@ x_test: {array-like, matrix}, shape = [n_test, n_features]
     Testing data
 y_test : numpy array of shape [n_test]
     Testing target values
+validation_set: optional, {array-like, matrix}, shape = [n_train, n_features]
+  Validation data (only for SGDA)
 
 Return
 -------
@@ -178,7 +180,6 @@ docker run --rm -v "$(pwd)":/home/pywfm-dev -w /home/pywfm-dev -ti jfloff/pywfm-
 * Improve the `save_model` / `load_model` so we can have a more defined init-fit-predict cycle (perhaps we could inherit from [sklearn.BaseEstimator](http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html))
 * Include current missing `libFM` options that are not part of `pywFM` model:
   * `meta`: filename for meta information about data set
-  * `validation`: filename for validation data (only for SGDA)
 
 *I'm no factorization machine expert, so this library was just an effort to have `libFM` as fast as possible in Python. Feel free to suggest features, enhancements; to point out issues; and of course, to post PRs.*
 
