@@ -5,27 +5,9 @@
 # 3) Convert pypi documentation (http://devotter.com/converter)
 
 from setuptools import setup
-from setuptools.command.install import install
-from setuptools.command.develop import develop
-
-def install_libfm():
-    import subprocess
-    subprocess.call('rm -rf pywFM/libfm', shell=True)
-    subprocess.call('git clone https://github.com/srendle/libfm pywFM/libfm', shell=True)
-    subprocess.call('cd pywFM/libfm && make', shell=True)
-
-class PywfmInstall(install):
-    def run(self):
-        install_libfm()
-        install.run(self)
-
-class PywfmDevelop(develop):
-    def run(self):
-        install_libfm()
-        develop.run(self)
 
 setup(name='pywFM',
-      version='0.8.1',
+      version='0.9.0',
       description='Python wrapper for libFM',
       classifiers=[
         'Development Status :: 3 - Alpha',
@@ -45,11 +27,4 @@ setup(name='pywFM',
         'scikit-learn',
         'pandas'
       ],
-      zip_safe=False,
-      cmdclass={
-        'install': PywfmInstall,
-        'develop': PywfmDevelop
-      },
-      package_data={
-        'pywFM': ['libfm/bin/libFM']
-      })
+      zip_safe=False)

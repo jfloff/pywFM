@@ -99,9 +99,10 @@ class FM:
         self.__silent = silent
         self.__temp_path = temp_path
 
-        # gets real path of package
-        self.__libfm_path=os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                       "libfm/bin/libFM")
+        # gets libfm path
+        self.__libfm_path = os.environ.get('LIBFM_PATH')
+        if self.__libfm_path is None:
+            raise OSError("`LIBFM_PATH` is not set. Please install libFM and set the path variable (https://github.com/jfloff/pywFM#installing).")
 
     def run(self, x_train, y_train, x_test, y_test, x_validation_set=None, y_validation_set=None):
         """Run factorization machine model against train and test data
@@ -149,7 +150,7 @@ class FM:
         dump_svmlight_file(x_test, y_test, test_path)
 
         # builds arguments array
-        args = [self.__libfm_path,
+        args = [self.__libfm_path + 'libFM',
                 "-task %s" % self.__task,
                 "-train %s" % train_path,
                 "-test %s" % test_path,

@@ -16,6 +16,11 @@ RUN pip install numpy \
     && pip install scikit-learn \
                    pywFM
 
+# clone repo and set envorinment variable to libfm PATH
+RUN git clone https://github.com/srendle/libfm /home/libfm \
+   && cd /home/libfm/ && make all
+ENV LIBFM_PATH /home/libfm/bin/
+
 # since we will be "always" mounting the volume, we can set this up
 WORKDIR /home/pywfm-run
 
