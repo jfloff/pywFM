@@ -184,11 +184,11 @@ docker run --rm -v "$(pwd)":/home/pywfm-dev -w /home/pywfm-dev -ti jfloff/pywfm-
 
 
 ### Future work
-* Migrate to Python3
 * Fix remove temporary files even if program crashes
 * Improve the `save_model` / `load_model` so we can have a more defined init-fit-predict cycle (perhaps we could inherit from [sklearn.BaseEstimator](http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html))
 * Include current missing `libFM` options that are not part of `pywFM` model:
   * `meta`: filename for meta information about data set
+* Look up into shared library solution to improve I/O overhead
 
 *I'm no factorization machine expert, so this library was just an effort to have `libFM` as fast as possible in Python. Feel free to suggest features, enhancements; to point out issues; and of course, to post PRs.*
 
