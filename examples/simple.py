@@ -20,6 +20,6 @@ fm = pywFM.FM(task='regression', num_iter=5)
 # split features and target for train/test
 # first 5 are train, last 2 are test
 model = fm.run(features[:5], target[:5], features[5:], target[5:])
-print model.predictions
+print(model.predictions)
 # you can also get the model weights
-print model.weights
+print(model.weights)
