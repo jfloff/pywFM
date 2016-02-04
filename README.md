@@ -16,12 +16,14 @@ While using Python implementations of Factorization Machines, I felt that the cu
 Sure, it's not Python native yada yada ... But at least we have a bulletproof, battle-tested implementation that we can guide ourselves with.
 
 ### Installing
-First you have to download `libFM` and set an environment variable to the `libFM` bin folder:
+First you have to clone and compile `libFM` repository and set an environment variable to the `libFM` bin folder:
 ```shell
 git clone https://github.com/srendle/libfm /home/libfm
 cd /home/libfm/ && make all
 export LIBFM_PATH=/home/libfm/bin/
 ```
+
+Make sure you are compiling from source, since pywFM needs the `save_model` option which only appears in [this commit](https://github.com/srendle/libfm/commit/19db0d1e36490290dadb530a56a5ae314b68da5d) from October 2015. Beware that the installers in [libfm.org](libfm.org) are both dated before this commit.
 
 Then, install `pywFM` using `pip`:
 ```shell
