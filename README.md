@@ -184,8 +184,8 @@ docker build --rm=true -t jfloff/pywfm-dev .
 docker run --rm -v "$(pwd)":/home/pywfm-dev -w /home/pywfm-dev -ti jfloff/pywfm-dev
 ```
 
-
 ### Future work
+* Check if `libfm` is correctly compiled and working
 * Fix remove temporary files even if program crashes
 * Improve the `save_model` / `load_model` so we can have a more defined init-fit-predict cycle (perhaps we could inherit from [sklearn.BaseEstimator](http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html))
 * Include current missing `libFM` options that are not part of `pywFM` model:
