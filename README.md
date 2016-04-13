@@ -23,7 +23,7 @@ cd /home/libfm/ && make all
 export LIBFM_PATH=/home/libfm/bin/
 ```
 
-Make sure you are compiling from source, since pywFM needs the `save_model` option which only appears in [this commit](https://github.com/srendle/libfm/commit/19db0d1e36490290dadb530a56a5ae314b68da5d) from October 2015. Beware that the installers in [libfm.org](libfm.org) are both dated before this commit.
+Make sure you are compiling source from `libfm` repository, since `pywFM` needs the `save_model` option which only appears in [this commit](https://github.com/srendle/libfm/commit/19db0d1e36490290dadb530a56a5ae314b68da5d) from October 2015. ***Beware that the installers and source code in [libfm.org](libfm.org) are both dated before this commit.***
 
 Then, install `pywFM` using `pip`:
 ```shell
@@ -185,7 +185,7 @@ docker run --rm -v "$(pwd)":/home/pywfm-dev -w /home/pywfm-dev -ti jfloff/pywfm-
 ```
 
 ### Future work
-* Check if `libfm` is correctly compiled and working
+* Check if `libfm` is the correct version, i.e., with the train-model flag
 * Fix remove temporary files even if program crashes
 * Improve the `save_model` / `load_model` so we can have a more defined init-fit-predict cycle (perhaps we could inherit from [sklearn.BaseEstimator](http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html))
 * Include current missing `libFM` options that are not part of `pywFM` model:
