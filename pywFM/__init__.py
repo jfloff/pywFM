@@ -93,7 +93,7 @@ class FM:
         self.__dim = "%d,%d,%d" % (int(k0), int(k1), k2)
         self.__learning_method = learning_method
         self.__learn_rate = learn_rate
-        self.__regularization = "%d,%d,%d" % (r0_regularization, r1_regularization, r2_regularization)
+        self.__regularization = "%f,%f,%f" % (r0_regularization, r1_regularization, r2_regularization)
         self.__rlog = rlog
         self.__verbose = int(verbose)
         self.__silent = silent
@@ -169,7 +169,7 @@ class FM:
 
         # appends arguments that only work for certain learning methods
         if self.__learning_method in ['sgd', 'sgda']:
-            args.append("-learn_rate %d" % self.__learn_rate)
+            args.append("-learn_rate %f" % self.__learn_rate)
 
         if self.__learning_method in ['sgd', 'sgda', 'als']:
             args.append("-regular '%s'" % self.__regularization)
