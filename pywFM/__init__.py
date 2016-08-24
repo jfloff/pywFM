@@ -121,7 +121,7 @@ class FM:
             Validation data (only for SGDA)
         y_validation_set: optional, numpy array of shape [n_train]
             Validation target data (only for SGDA)
-        meta: optiional, numpy array of shape [n_features]
+        meta: optional, numpy array of shape [n_features]
             Grouping input variables
 
         Return
