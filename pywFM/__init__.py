@@ -2,6 +2,7 @@ from subprocess import call
 import os
 import tempfile
 
+
 class FM:
     """ Class that wraps `libFM` parameters. For more information read
     [libFM manual](http://www.libfm.org/libfm-1.42.manual.pdf)
@@ -61,8 +62,6 @@ class FM:
 
     """
     ### unsused libFM flags
-    meta: filename for meta information about data set
-        FUTURE WORK
     cache_size: cache size for data storage (only applicable if data is in binary format), default=infty
         datafile is text so we don't need this parameter
     relation: BS - filenames for the relations, default=''
@@ -71,20 +70,20 @@ class FM:
 
     def __init__(self,
                  task,
-                 num_iter = 100,
-                 init_stdev = 0.1,
-                 k0 = True,
-                 k1 = True,
-                 k2 = 8,
-                 learning_method = 'mcmc',
-                 learn_rate = 0.1,
-                 r0_regularization = 0,
-                 r1_regularization = 0,
-                 r2_regularization = 0,
-                 rlog = True,
-                 verbose = False,
-                 silent = False,
-                 temp_path = None):
+                 num_iter=100,
+                 init_stdev=0.1,
+                 k0=True,
+                 k1=True,
+                 k2=8,
+                 learning_method='mcmc',
+                 learn_rate=0.1,
+                 r0_regularization=0,
+                 r1_regularization=0,
+                 r2_regularization=0,
+                 rlog=True,
+                 verbose=False,
+                 silent=False,
+                 temp_path=None):
 
         # gets first letter of either regression or classification
         self.__task = task[0]
@@ -102,9 +101,10 @@ class FM:
         # gets libfm path
         self.__libfm_path = os.environ.get('LIBFM_PATH')
         if self.__libfm_path is None:
-            raise OSError("`LIBFM_PATH` is not set. Please install libFM and set the path variable (https://github.com/jfloff/pywFM#installing).")
+            raise OSError("`LIBFM_PATH` is not set. Please install libFM and set the path variable "
+                          "(https://github.com/jfloff/pywFM#installing).")
 
-    def run(self, x_train, y_train, x_test, y_test, x_validation_set=None, y_validation_set=None):
+    def run(self, x_train, y_train, x_test, y_test, x_validation_set=None, y_validation_set=None, meta=None):
         """Run factorization machine model against train and test data
 
         Parameters
@@ -121,6 +121,8 @@ class FM:
             Validation data (only for SGDA)
         y_validation_set: optional, numpy array of shape [n_train]
             Validation target data (only for SGDA)
+        meta: optional, numpy array of shape [n_features]
+            Grouping input variables
 
         Return
         -------
@@ -140,10 +142,10 @@ class FM:
 
         from sklearn.datasets import dump_svmlight_file
 
-        train_fd,train_path = tempfile.mkstemp(dir=self.__temp_path)
-        test_fd,test_path = tempfile.mkstemp(dir=self.__temp_path)
-        out_fd,out_path = tempfile.mkstemp(dir=self.__temp_path)
-        model_fd,model_path = tempfile.mkstemp(dir=self.__temp_path)
+        train_fd, train_path = tempfile.mkstemp(dir=self.__temp_path)
+        test_fd, test_path = tempfile.mkstemp(dir=self.__temp_path)
+        out_fd, out_path = tempfile.mkstemp(dir=self.__temp_path)
+        model_fd, model_path = tempfile.mkstemp(dir=self.__temp_path)
 
         # converts train and test data to libSVM format
         dump_svmlight_file(x_train, y_train, train_path)
@@ -163,8 +165,9 @@ class FM:
                 "-save_model %s" % model_path]
 
         # appends rlog if true
+        rlog_fd, rlog_path = None, None
         if self.__rlog:
-            rlog_fd,rlog_path = tempfile.mkstemp(dir=self.__temp_path)
+            rlog_fd, rlog_path = tempfile.mkstemp(dir=self.__temp_path)
             args.append("-rlog %s" % rlog_path)
 
         # appends arguments that only work for certain learning methods
@@ -176,8 +179,9 @@ class FM:
 
         # adds validation if sgda
         # if validation_set is none, libFM will throw error hence, I'm not doing any validation
+        validation_fd, validation_path = None, None
         if self.__learning_method == 'sgda' and (x_validation_set is not None and y_validation_set is not None):
-            validation_fd,validation_path = tempfile.mkstemp(dir=self.__temp_path)
+            validation_fd, validation_path = tempfile.mkstemp(dir=self.__temp_path)
             dump_svmlight_file(x_validation_set, y_validation_set, validation_path)
             args.append("-validation %s" % validation_path)
 
@@ -185,13 +189,22 @@ class FM:
         if self.__silent:
             args.append(" &> /dev/null")
 
+        # if meta data is given
+        meta_fd, meta_path = None, None
+        if meta is not None:
+            meta_fd, meta_path = tempfile.mkstemp(dir=self.__temp_path, text=True)
+            # write group ids
+            with open(meta_path, "w") as meta_file:
+                for group_id in meta:
+                    meta_file.write("%s\n" % group_id)
+            args.append("-meta %s" % meta_path)
+
         # call libfm with parsed arguments
         # unkown bug with "-dim" option on array -- forced to concatenate string
         args = ' '.join(args)
         call(args, shell=True)
 
         # reads output file
-        preds = []
         with open(out_path, 'r') as out_file:
             out_read = out_file.read()
             preds = [float(p) for p in out_read.split('\n') if p]
@@ -209,9 +222,12 @@ class FM:
             for line in f.read().splitlines():
                 # checks which line is starting with #
                 if line.startswith('#'):
-                    if "#global bias W0" in line: out_iter = 0
-                    elif "#unary interactions Wj" in line: out_iter = 1
-                    elif "#pairwise interactions Vj,f" in line: out_iter = 2
+                    if "#global bias W0" in line:
+                        out_iter = 0
+                    elif "#unary interactions Wj" in line:
+                        out_iter = 1
+                    elif "#pairwise interactions Vj,f" in line:
+                        out_iter = 2
                 else:
                     # check context get in previous step and adds accordingly
                     if out_iter == 0:
@@ -233,11 +249,6 @@ class FM:
         else:
             rlog = None
 
-        # adds validation if sgda
-        if self.__learning_method == 'sgda' and (x_validation_set is not None and y_validation_set is not None):
-            os.close(validation_fd)
-            os.remove(validation_path)
-
         # removes temporary output file after using
         os.close(train_fd)
         os.remove(train_path)
@@ -247,6 +258,12 @@ class FM:
         os.remove(model_path)
         os.close(out_fd)
         os.remove(out_path)
+        if self.__learning_method == 'sgda' and (x_validation_set is not None and y_validation_set is not None):
+            os.close(validation_fd)
+            os.remove(validation_path)
+        if meta is not None:
+            os.close(meta_fd)
+            os.remove(meta_path)
 
         # return as named collection for multiple output
         import collections
