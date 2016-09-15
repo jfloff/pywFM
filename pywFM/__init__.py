@@ -152,7 +152,7 @@ class FM:
         dump_svmlight_file(x_test, y_test, test_path)
 
         # builds arguments array
-        args = [self.__libfm_path + 'libFM',
+        args = [os.path.join(self.__libfm_path, "libFM"),
                 "-task %s" % self.__task,
                 "-train %s" % train_path,
                 "-test %s" % test_path,
