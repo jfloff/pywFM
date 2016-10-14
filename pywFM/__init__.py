@@ -52,6 +52,9 @@ class FM:
     verbose: bool, optional
         How much infos to print
         Defaults to False.
+    seed: int, optional
+        seed used to reproduce the results
+        Defaults to None.
     silent: bool, optional
         Completly silences all libFM output
         Defaults to False.
@@ -82,6 +85,7 @@ class FM:
                  r2_regularization=0,
                  rlog=True,
                  verbose=False,
+                 seed=None,
                  silent=False,
                  temp_path=None):
 
@@ -95,6 +99,7 @@ class FM:
         self.__regularization = "%f,%f,%f" % (r0_regularization, r1_regularization, r2_regularization)
         self.__rlog = rlog
         self.__verbose = int(verbose)
+        self.__seed = int(seed) if seed else None
         self.__silent = silent
         self.__temp_path = temp_path
 
@@ -169,6 +174,10 @@ class FM:
         if self.__rlog:
             rlog_fd, rlog_path = tempfile.mkstemp(dir=self.__temp_path)
             args.append("-rlog %s" % rlog_path)
+
+        # appends seed if given
+        if self.__seed:
+            args.append("-seed %d" % self.__seed)
 
         # appends arguments that only work for certain learning methods
         if self.__learning_method in ['sgd', 'sgda']:

@@ -123,6 +123,9 @@ rlog: bool, optional
 verbose: bool, optional
     How much infos to print
     Defaults to False.
+seed: int, optional
+    seed used to reproduce the results
+    Defaults to None.
 silent: bool, optional
     Completly silences all libFM output
     Defaults to False.
