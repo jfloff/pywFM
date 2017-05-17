@@ -5,8 +5,11 @@ FROM jfloff/alpine-python:2.7
 RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
     && echo "@testing http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
     && apk add --update \
+               py-numpy-f2py@community \
                py-numpy@community \
                py-numpy-dev@community \
+    # split commands due some constrains bug
+    && apk add --update \
                py-scipy@testing \
     && rm /var/cache/apk/*
 
