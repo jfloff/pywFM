@@ -23,7 +23,10 @@ RUN pip install --upgrade scipy \
 
 # clone repo and set envorinment variable to libfm PATH
 RUN git clone https://github.com/srendle/libfm /home/libfm \
-    && cd /home/libfm/ && make all
+    && cd /home/libfm/ \
+    # taking advantage of a bug to allow us to save model #ShameShame
+    && git reset --hard 91f8504a15120ef6815d6e10cc7dee42eebaab0f \
+    && make all
 ENV LIBFM_PATH /home/libfm/bin/
 
 # since we will be "always" mounting the volume, we can set this up

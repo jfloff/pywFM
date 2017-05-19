@@ -19,11 +19,14 @@ Sure, it's not Python native yada yada ... But at least we have a bulletproof, b
 First you have to clone and compile `libFM` repository and set an environment variable to the `libFM` bin folder:
 ```shell
 git clone https://github.com/srendle/libfm /home/libfm
-cd /home/libfm/ && make all
+cd /home/libfm/
+# taking advantage of a bug to allow us to save model #ShameShame
+git reset --hard 91f8504a15120ef6815d6e10cc7dee42eebaab0f
+make all
 export LIBFM_PATH=/home/libfm/bin/
 ```
 
-Make sure you are compiling source from `libfm` repository, since `pywFM` needs the `save_model` option which only appears in [this commit](https://github.com/srendle/libfm/commit/19db0d1e36490290dadb530a56a5ae314b68da5d) from October 2015. ***Beware that the installers and source code in [libfm.org](libfm.org) are both dated before this commit.***
+Make sure you are compiling source from `libfm` repository and at [this specific commit](https://github.com/srendle/libfm/commit/91f8504a15120ef6815d6e10cc7dee42eebaab0f), since `pywFM` needs the `save_model`. ***Beware that the installers and source code in [libfm.org](libfm.org) are both dated before this commit.*** I know this is extremely hacky, but since a fix was deployed it only allows the `save_model` option for SGD or ALS. I don't know why exactly, because it was working well before.
 
 Then, install `pywFM` using `pip`:
 ```shell
