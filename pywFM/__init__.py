@@ -147,10 +147,11 @@ class FM:
 
         from sklearn.datasets import dump_svmlight_file
 
-        train_fd, train_path = tempfile.mkstemp(dir=self.__temp_path)
-        test_fd, test_path = tempfile.mkstemp(dir=self.__temp_path)
-        out_fd, out_path = tempfile.mkstemp(dir=self.__temp_path)
-        model_fd, model_path = tempfile.mkstemp(dir=self.__temp_path)
+        TMP_SUFFIX = '.pywfm'
+        train_fd, train_path = tempfile.mkstemp(suffix=TMP_SUFFIX, dir=self.__temp_path)
+        test_fd, test_path = tempfile.mkstemp(suffix=TMP_SUFFIX, dir=self.__temp_path)
+        out_fd, out_path = tempfile.mkstemp(suffix=TMP_SUFFIX, dir=self.__temp_path)
+        model_fd, model_path = tempfile.mkstemp(suffix=TMP_SUFFIX, dir=self.__temp_path)
 
         # converts train and test data to libSVM format
         dump_svmlight_file(x_train, y_train, train_path)
@@ -172,7 +173,7 @@ class FM:
         # appends rlog if true
         rlog_fd, rlog_path = None, None
         if self.__rlog:
-            rlog_fd, rlog_path = tempfile.mkstemp(dir=self.__temp_path)
+            rlog_fd, rlog_path = tempfile.mkstemp(suffix=TMP_SUFFIX, dir=self.__temp_path)
             args.append("-rlog %s" % rlog_path)
 
         # appends seed if given
@@ -190,7 +191,7 @@ class FM:
         # if validation_set is none, libFM will throw error hence, I'm not doing any validation
         validation_fd, validation_path = None, None
         if self.__learning_method == 'sgda' and (x_validation_set is not None and y_validation_set is not None):
-            validation_fd, validation_path = tempfile.mkstemp(dir=self.__temp_path)
+            validation_fd, validation_path = tempfile.mkstemp(suffix=TMP_SUFFIX, dir=self.__temp_path)
             dump_svmlight_file(x_validation_set, y_validation_set, validation_path)
             args.append("-validation %s" % validation_path)
 
@@ -201,7 +202,7 @@ class FM:
         # if meta data is given
         meta_fd, meta_path = None, None
         if meta is not None:
-            meta_fd, meta_path = tempfile.mkstemp(dir=self.__temp_path, text=True)
+            meta_fd, meta_path = tempfile.mkstemp(suffix=TMP_SUFFIX, dir=self.__temp_path, text=True)
             # write group ids
             with open(meta_path, "w") as meta_file:
                 for group_id in meta:
@@ -258,6 +259,13 @@ class FM:
         else:
             rlog = None
 
+        if self.__learning_method == 'sgda' and (x_validation_set is not None and y_validation_set is not None):
+            os.close(validation_fd)
+            os.remove(validation_path)
+        if meta is not None:
+            os.close(meta_fd)
+            os.remove(meta_path)
+
         # removes temporary output file after using
         os.close(train_fd)
         os.remove(train_path)
@@ -267,12 +275,6 @@ class FM:
         os.remove(model_path)
         os.close(out_fd)
         os.remove(out_path)
-        if self.__learning_method == 'sgda' and (x_validation_set is not None and y_validation_set is not None):
-            os.close(validation_fd)
-            os.remove(validation_path)
-        if meta is not None:
-            os.close(meta_fd)
-            os.remove(meta_path)
 
         # return as named collection for multiple output
         import collections
