@@ -19,7 +19,12 @@ RUN pip install --upgrade scipy \
     && pip install numpy \
     && pip install pandas \
     && pip install scikit-learn \
-                   wheel
+                   # for PyPi package management
+                   # How to publish to PyPi:
+                   # 1) python setup.py bdist_wheel
+                   # 2) twine upload dist/*
+                   wheel \
+                   twine
 
 # clone repo and set envorinment variable to libfm PATH
 RUN git clone https://github.com/srendle/libfm /home/libfm \
