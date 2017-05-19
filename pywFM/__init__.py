@@ -60,7 +60,7 @@ class FM:
         Defaults to False.
     temp_path: string, optional
         Sets path for libFM temporary files. Usefull when dealing with large data.
-        Defaults to None (default mkstemp behaviour)
+        Defaults to None (default NamedTemporaryFile behaviour)
     """
 
     """
@@ -148,33 +148,35 @@ class FM:
         from sklearn.datasets import dump_svmlight_file
 
         TMP_SUFFIX = '.pywfm'
-        train_fd, train_path = tempfile.mkstemp(suffix=TMP_SUFFIX, dir=self.__temp_path)
-        test_fd, test_path = tempfile.mkstemp(suffix=TMP_SUFFIX, dir=self.__temp_path)
-        out_fd, out_path = tempfile.mkstemp(suffix=TMP_SUFFIX, dir=self.__temp_path)
-        model_fd, model_path = tempfile.mkstemp(suffix=TMP_SUFFIX, dir=self.__temp_path)
+        train_fd = tempfile.NamedTemporaryFile(suffix=TMP_SUFFIX, dir=self.__temp_path)
+        test_fd = tempfile.NamedTemporaryFile(suffix=TMP_SUFFIX, dir=self.__temp_path)
+        out_fd = tempfile.NamedTemporaryFile(suffix=TMP_SUFFIX, dir=self.__temp_path)
+        model_fd = tempfile.NamedTemporaryFile(suffix=TMP_SUFFIX, dir=self.__temp_path)
 
         # converts train and test data to libSVM format
-        dump_svmlight_file(x_train, y_train, train_path)
-        dump_svmlight_file(x_test, y_test, test_path)
+        dump_svmlight_file(x_train, y_train, train_fd)
+        train_fd.seek(0)
+        dump_svmlight_file(x_test, y_test, test_fd)
+        test_fd.seek(0)
 
         # builds arguments array
         args = [os.path.join(self.__libfm_path, "libFM"),
                 "-task %s" % self.__task,
-                "-train %s" % train_path,
-                "-test %s" % test_path,
+                "-train %s" % train_fd.name,
+                "-test %s" % test_fd.name,
                 "-dim '%s'" % self.__dim,
                 "-init_stdev %g" % self.__init_stdev,
                 "-iter %d" % self.__num_iter,
                 "-method %s" % self.__learning_method,
-                "-out %s" % out_path,
+                "-out %s" % out_fd.name,
                 "-verbosity %d" % self.__verbose,
-                "-save_model %s" % model_path]
+                "-save_model %s" % model_fd.name]
 
         # appends rlog if true
-        rlog_fd, rlog_path = None, None
+        rlog_fd = None
         if self.__rlog:
-            rlog_fd, rlog_path = tempfile.mkstemp(suffix=TMP_SUFFIX, dir=self.__temp_path)
-            args.append("-rlog %s" % rlog_path)
+            rlog_fd = tempfile.NamedTemporaryFile(suffix=TMP_SUFFIX, dir=self.__temp_path)
+            args.append("-rlog %s" % rlog_fd.name)
 
         # appends seed if given
         if self.__seed:
@@ -189,25 +191,25 @@ class FM:
 
         # adds validation if sgda
         # if validation_set is none, libFM will throw error hence, I'm not doing any validation
-        validation_fd, validation_path = None, None
+        validation_fd = None
         if self.__learning_method == 'sgda' and (x_validation_set is not None and y_validation_set is not None):
-            validation_fd, validation_path = tempfile.mkstemp(suffix=TMP_SUFFIX, dir=self.__temp_path)
-            dump_svmlight_file(x_validation_set, y_validation_set, validation_path)
-            args.append("-validation %s" % validation_path)
+            validation_fd = tempfile.NamedTemporaryFile(suffix=TMP_SUFFIX, dir=self.__temp_path)
+            dump_svmlight_file(x_validation_set, y_validation_set, validation_fd.name)
+            args.append("-validation %s" % validation_fd.name)
 
         # if silent redirects all output
         if self.__silent:
             args.append(" &> /dev/null")
 
         # if meta data is given
-        meta_fd, meta_path = None, None
+        meta_fd = None
         if meta is not None:
-            meta_fd, meta_path = tempfile.mkstemp(suffix=TMP_SUFFIX, dir=self.__temp_path, text=True)
+            meta_fd = tempfile.NamedTemporaryFile(suffix=TMP_SUFFIX, dir=self.__temp_path, text=True)
             # write group ids
-            with open(meta_path, "w") as meta_file:
-                for group_id in meta:
-                    meta_file.write("%s\n" % group_id)
-            args.append("-meta %s" % meta_path)
+            for group_id in meta:
+                meta_fd.write("%s\n" % group_id)
+            args.append("-meta %s" % meta_fd.name)
+            meta_fd.seek(0)
 
         # call libfm with parsed arguments
         # unkown bug with "-dim" option on array -- forced to concatenate string
@@ -215,9 +217,7 @@ class FM:
         call(args, shell=True)
 
         # reads output file
-        with open(out_path, 'r') as out_file:
-            out_read = out_file.read()
-            preds = [float(p) for p in out_read.split('\n') if p]
+        preds = [float(p) for p in out_fd.read().split('\n') if p]
 
         # "hidden" feature that allows users to save the model
         # We use this to get the feature weights
@@ -228,24 +228,23 @@ class FM:
         pairwise_interactions = []
         # if 0 its global bias; if 1, weights; if 2, pairwise interactions
         out_iter = 0
-        with open(model_path) as f:
-            for line in f.read().splitlines():
-                # checks which line is starting with #
-                if line.startswith('#'):
-                    if "#global bias W0" in line:
-                        out_iter = 0
-                    elif "#unary interactions Wj" in line:
-                        out_iter = 1
-                    elif "#pairwise interactions Vj,f" in line:
-                        out_iter = 2
-                else:
-                    # check context get in previous step and adds accordingly
-                    if out_iter == 0:
-                        global_bias = float(line)
-                    elif out_iter == 1:
-                        weights.append(float(line))
-                    elif out_iter == 2:
-                        pairwise_interactions.append([float(x) for x in line.split(' ')])
+        for line in model_fd.read().splitlines():
+            # checks which line is starting with #
+            if line.startswith('#'):
+                if "#global bias W0" in line:
+                    out_iter = 0
+                elif "#unary interactions Wj" in line:
+                    out_iter = 1
+                elif "#pairwise interactions Vj,f" in line:
+                    out_iter = 2
+            else:
+                # check context get in previous step and adds accordingly
+                if out_iter == 0:
+                    global_bias = float(line)
+                elif out_iter == 1:
+                    weights.append(float(line))
+                elif out_iter == 2:
+                    pairwise_interactions.append([float(x) for x in line.split(' ')])
 
         pairwise_interactions = np.matrix(pairwise_interactions)
 
@@ -253,28 +252,22 @@ class FM:
         if self.__rlog:
             # parses rlog into
             import pandas as pd
-            rlog = pd.read_csv(rlog_path, sep='\t')
-            os.close(rlog_fd)
-            os.remove(rlog_path)
+            rlog_fd.seek(0)
+            rlog = pd.read_csv(rlog_fd.name, sep='\t')
+            rlog_fd.close()
         else:
             rlog = None
 
         if self.__learning_method == 'sgda' and (x_validation_set is not None and y_validation_set is not None):
-            os.close(validation_fd)
-            os.remove(validation_path)
+            validation_fd.close()
         if meta is not None:
-            os.close(meta_fd)
-            os.remove(meta_path)
+            meta_fd.close()
 
         # removes temporary output file after using
-        os.close(train_fd)
-        os.remove(train_path)
-        os.close(test_fd)
-        os.remove(test_path)
-        os.close(model_fd)
-        os.remove(model_path)
-        os.close(out_fd)
-        os.remove(out_path)
+        train_fd.close()
+        test_fd.close()
+        model_fd.close()
+        out_fd.close()
 
         # return as named collection for multiple output
         import collections
