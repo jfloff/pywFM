@@ -109,6 +109,19 @@ class FM:
             raise OSError("`LIBFM_PATH` is not set. Please install libFM and set the path variable "
                           "(https://github.com/jfloff/pywFM#installing).")
 
+        # #ShameShame
+        # Once upon a time, there was a bug in libFM that allowed any type of
+        # learning_method to save the model. I @jfloff built this package at
+        # that time, and did not find anything that showed me that MCMC couldn't
+        # use save_model flag. Nowadays only SGD and ALS can use this parameter.
+        # Hence, we need to reset the repo to this specific commit pre-fix, so
+        # we can use MCMC with save_model flag.
+        GITHASH = '91f8504a15120ef6815d6e10cc7dee42eebaab0f'
+        c_githash = subprocess.check_output(['git', '--git-dir', os.path.join(self.__libfm_path, "..", ".git"), 'rev-parse', 'HEAD']).strip()
+        if c_githash != GITHASH:
+            raise OSError("libFM is not checked out to the correct commit."
+                          "(https://github.com/jfloff/pywFM#installing).")
+
     def run(self, x_train, y_train, x_test, y_test, x_validation_set=None, y_validation_set=None, meta=None):
         """Run factorization machine model against train and test data
 

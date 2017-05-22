@@ -191,7 +191,6 @@ docker run --rm -v "$(pwd)":/home/pywfm-dev -w /home/pywfm-dev -ti jfloff/pywfm-
 ```
 
 ### Future work
-* Check if `libfm` is the correct version, i.e., with the train-model flag
 * Improve the `save_model` / `load_model` so we can have a more defined init-fit-predict cycle (perhaps we could inherit from [sklearn.BaseEstimator](http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html))
 * Look up into shared library solution to improve I/O overhead
 
