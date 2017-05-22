@@ -18,7 +18,7 @@ RUN echo "@community http://dl-cdn.alpinelinux.org/alpine/edge/community" >> /et
 RUN pip install --upgrade scipy \
     && pip install numpy \
     && pip install pandas \
-    && pip install scikit-learn wheel \
+    && pip install scikit-learn \
     && pip install pywFM
 
 # clone repo and set envorinment variable to libfm PATH
@@ -30,7 +30,7 @@ RUN git clone https://github.com/srendle/libfm /home/libfm \
 ENV LIBFM_PATH /home/libfm/bin/
 
 # since we will be "always" mounting the volume, we can set this up
-WORKDIR /home/pywfm-run
+WORKDIR /home/pywfm
 
 # start init script and bash right after
-CMD python simple.py
+CMD /bin/bash

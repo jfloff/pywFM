@@ -174,15 +174,13 @@ rlog: pandas dataframe [nrow = num_iter]
 ### Docker
 This repository includes `Dockerfile` for development and for running `pywFM`.
 
-* Run `pywFM` examples ([Dockerfile](examples/Dockerfile)): if you are only interested in running the examples. `Dockerfile` defaults to the `simple.py` example (the one in this README).
+* Run `pywFM` examples ([Dockerfile](examples/Dockerfile)): if you are only interested in running the examples, you can use the pre-build image availabe in [Docker Hub](https://hub.docker.com/r/jfloff/pywfm):
 ```shell
-# to build image
-docker build --rm=true -t jfloff/pywfm-run .
-# to run image
-docker run --rm -v "$(pwd)":/home/pywfm-run -w /home/pywfm-run -ti jfloff/pywfm-run
+# to run examples/simple.py (the one in this README).
+docker run --rm -v "$(pwd)":/home/pywfm -w /home/pywfm -ti jfloff/pywfm python examples/simple.py
 ```
 
-* Development of `pywFM` ([Dockerfile](Dockerfile)): useful if you want to make changes to the repo. `Dockerfile` defaults to bash for easier development.
+* Development of `pywFM` ([Dockerfile](Dockerfile)): useful if you want to make changes to the repo. `Dockerfile` defaults to bash.
 ```shell
 # to build image
 docker build --rm=true -t jfloff/pywfm-dev .
@@ -192,6 +190,7 @@ docker run --rm -v "$(pwd)":/home/pywfm-dev -w /home/pywfm-dev -ti jfloff/pywfm-
 
 ### Future work
 * Improve the `save_model` / `load_model` so we can have a more defined init-fit-predict cycle (perhaps we could inherit from [sklearn.BaseEstimator](http://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html))
+* Can we contribute to libFM repo so save_model is enabled for all learning methods (namely MCMC)?
 * Look up into shared library solution to improve I/O overhead
 
 *I'm no factorization machine expert, so this library was just an effort to have `libFM` as fast as possible in Python. Feel free to suggest features, enhancements; to point out issues; and of course, to post PRs.*
