@@ -1,4 +1,4 @@
-from subprocess import call
+import subprocess
 import os
 import tempfile
 
@@ -161,33 +161,33 @@ class FM:
 
         # builds arguments array
         args = [os.path.join(self.__libfm_path, "libFM"),
-                "-task %s" % self.__task,
-                "-train %s" % train_fd.name,
-                "-test %s" % test_fd.name,
-                "-dim '%s'" % self.__dim,
-                "-init_stdev %g" % self.__init_stdev,
-                "-iter %d" % self.__num_iter,
-                "-method %s" % self.__learning_method,
-                "-out %s" % out_fd.name,
-                "-verbosity %d" % self.__verbose,
-                "-save_model %s" % model_fd.name]
+                '-task', "%s" % self.__task,
+                '-train', "%s" % train_fd.name,
+                '-test', "%s" % test_fd.name,
+                '-dim', "'%s'" % self.__dim,
+                '-init_stdev', "%g" % self.__init_stdev,
+                '-iter', "%d" % self.__num_iter,
+                '-method', "%s" % self.__learning_method,
+                '-out', "%s" % out_fd.name,
+                '-verbosity', "%d" % self.__verbose,
+                '-save_model', "%s" % model_fd.name]
 
         # appends rlog if true
         rlog_fd = None
         if self.__rlog:
             rlog_fd = tempfile.NamedTemporaryFile(suffix=TMP_SUFFIX, dir=self.__temp_path)
-            args.append("-rlog %s" % rlog_fd.name)
+            args.extend(['-rlog', "%s" % rlog_fd.name])
 
         # appends seed if given
         if self.__seed:
-            args.append("-seed %d" % self.__seed)
+            args.extend(['-seed', "%d" % self.__seed])
 
         # appends arguments that only work for certain learning methods
         if self.__learning_method in ['sgd', 'sgda']:
-            args.append("-learn_rate %.5f" % self.__learn_rate)
+            args.extend(['-learn_rate', "%.5f" % self.__learn_rate])
 
         if self.__learning_method in ['sgd', 'sgda', 'als']:
-            args.append("-regular '%s'" % self.__regularization)
+            args.extend(['-regular', "'%s'" % self.__regularization])
 
         # adds validation if sgda
         # if validation_set is none, libFM will throw error hence, I'm not doing any validation
@@ -195,11 +195,7 @@ class FM:
         if self.__learning_method == 'sgda' and (x_validation_set is not None and y_validation_set is not None):
             validation_fd = tempfile.NamedTemporaryFile(suffix=TMP_SUFFIX, dir=self.__temp_path)
             dump_svmlight_file(x_validation_set, y_validation_set, validation_fd.name)
-            args.append("-validation %s" % validation_fd.name)
-
-        # if silent redirects all output
-        if self.__silent:
-            args.append(" &> /dev/null")
+            args.extend(['-validation', "%s" % validation_fd.name])
 
         # if meta data is given
         meta_fd = None
@@ -208,13 +204,19 @@ class FM:
             # write group ids
             for group_id in meta:
                 meta_fd.write("%s\n" % group_id)
-            args.append("-meta %s" % meta_fd.name)
+            args.extend(['-meta', "%s" % meta_fd.name])
             meta_fd.seek(0)
 
+        # if silent redirects all output
+        stdout = None
+        if self.__silent:
+            stdout = open(os.devnull, 'wb')
+
         # call libfm with parsed arguments
-        # unkown bug with "-dim" option on array -- forced to concatenate string
-        args = ' '.join(args)
-        call(args, shell=True)
+        # had unkown bug with "-dim" option on array. At the time was forced to
+        # concatenate string `args = ' '.join(args)` but looks like its working
+        # needs further tests
+        subprocess.call(args, shell=False, stdout=stdout)
 
         # reads output file
         preds = [float(p) for p in out_fd.read().split('\n') if p]
