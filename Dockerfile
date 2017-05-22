@@ -21,8 +21,9 @@ RUN pip install --upgrade scipy \
     && pip install scikit-learn \
                    # for PyPi package management
                    # How to publish to PyPi:
-                   # 1) python setup.py bdist_wheel
-                   # 2) twine upload dist/*
+                   # 1) bump setup.py for the new version
+                   # 2) `python setup.py bdist_wheel`
+                   # 3) `twine upload dist/*`
                    wheel \
                    twine
 
