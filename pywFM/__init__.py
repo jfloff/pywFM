@@ -259,7 +259,10 @@ class FM:
                 elif out_iter == 1:
                     weights.append(float(line))
                 elif out_iter == 2:
-                    pairwise_interactions.append([float(x) for x in line.split(' ')])
+                    try:
+                        pairwise_interactions.append([float(x) for x in line.split(' ')])
+                    except ValueError as e:
+                        pairwise_interactions.append(0.0) #Case: no pairwise interactions used
 
         pairwise_interactions = np.matrix(pairwise_interactions)
 
