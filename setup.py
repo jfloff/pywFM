@@ -7,7 +7,7 @@
 from setuptools import setup
 
 setup(name='pywFM',
-      version='0.11.0',
+      version='0.12.0',
       description='Python wrapper for libFM',
       classifiers=[
         'Development Status :: 3 - Alpha',
