@@ -28,6 +28,8 @@ export LIBFM_PATH=/home/libfm/bin/
 
 Make sure you are compiling source from `libfm` repository and at [this specific commit](https://github.com/srendle/libfm/commit/91f8504a15120ef6815d6e10cc7dee42eebaab0f), since `pywFM` needs the `save_model`. ***Beware that the installers and source code in [libfm.org](libfm.org) are both dated before this commit.*** I know this is extremely hacky, but since a fix was deployed it only allows the `save_model` option for SGD or ALS. I don't know why exactly, because it was working well before.
 
+If you use *Jupyter* take a look at the following [issue](https://github.com/jfloff/pywFM/issues/18) for some extra notes on getting `libfm` to work.
+
 Then, install `pywFM` using `pip`:
 ```shell
 pip install pywFM
