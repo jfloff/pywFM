@@ -77,6 +77,14 @@ print(model.weights)
 
 You can also use numpy's `array`, sklearn's `sparse_matrix`, and even pandas' `DataFrame` as features input.
 
+### Prediction on new data
+
+Current approach is to send test data as `x_test`, `y_test` in `run` method call. libfm uses the test values to output some results regarding its predictions. They are not used when training the model. `y_test` can be set as dummy value and just collect the predictions with `model.predictions` (also disregard the prediction statistics since those will be wrong). For more info check libfm manual.
+
+Running against a new dataset using something like a `predict` method is not supported yet. Pending feature request: https://github.com/jfloff/pywFM/issues/7
+
+Feel free to PR that change ;)
+
 ### Usage
 
 *Don't forget to acknowledge `libFM` (i.e. cite the paper [Factorization Machines with libFM](http://libfm.org/#publications)) if you publish results produced with this software.*
