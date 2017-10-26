@@ -104,7 +104,7 @@ class FM:
         self.__temp_path = temp_path
 
         # gets libfm path
-        self.__libfm_path = os.environ.get('LIBFM_PATH')
+        self.__libfm_path = os.path.join(os.environ.get('LIBFM_PATH'), "")
         if self.__libfm_path is None:
             raise OSError("`LIBFM_PATH` is not set. Please install libFM and set the path variable "
                           "(https://github.com/jfloff/pywFM#installing).")
@@ -116,6 +116,7 @@ class FM:
         # use save_model flag. Nowadays only SGD and ALS can use this parameter.
         # Hence, we need to reset the repo to this specific commit pre-fix, so
         # we can use MCMC with save_model flag.
+        # Can we contribute to main libFM repo so this is possible again??
         GITHASH = '91f8504a15120ef6815d6e10cc7dee42eebaab0f'
         c_githash = subprocess.check_output(['git', '--git-dir', os.path.join(self.__libfm_path, "..", ".git"), 'rev-parse', 'HEAD']).strip()
         if c_githash != GITHASH:
@@ -271,6 +272,7 @@ class FM:
             # parses rlog into
             import pandas as pd
             rlog_fd.seek(0)
+            print os.stat(rlog_fd.name).st_size
             rlog = pd.read_csv(rlog_fd.name, sep='\t')
             rlog_fd.close()
         else:
