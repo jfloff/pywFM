@@ -119,7 +119,7 @@ class FM:
         # Can we contribute to main libFM repo so this is possible again??
         GITHASH = '91f8504a15120ef6815d6e10cc7dee42eebaab0f'
         c_githash = subprocess.check_output(['git', '--git-dir', os.path.join(self.__libfm_path, "..", ".git"), 'rev-parse', 'HEAD']).strip()
-        if c_githash != GITHASH:
+        if c_githash.decode("utf-8") != GITHASH:
             raise OSError("libFM is not checked out to the correct commit."
                           "(https://github.com/jfloff/pywFM#installing).")
 
@@ -233,7 +233,7 @@ class FM:
         subprocess.call(args, shell=False, stdout=stdout)
 
         # reads output file
-        preds = [float(p) for p in out_fd.read().split('\n') if p]
+        preds = [float(p) for p in out_fd.read().decode("utf-8").split('\n') if p]
 
         # "hidden" feature that allows users to save the model
         # We use this to get the feature weights
@@ -244,7 +244,7 @@ class FM:
         pairwise_interactions = []
         # if 0 its global bias; if 1, weights; if 2, pairwise interactions
         out_iter = 0
-        for line in model_fd.read().splitlines():
+        for line in model_fd.read().decode("utf-8").splitlines():
             # checks which line is starting with #
             if line.startswith('#'):
                 if "#global bias W0" in line:
@@ -272,7 +272,7 @@ class FM:
             # parses rlog into
             import pandas as pd
             rlog_fd.seek(0)
-            print os.stat(rlog_fd.name).st_size
+            print(os.stat(rlog_fd.name).st_size)
             rlog = pd.read_csv(rlog_fd.name, sep='\t')
             rlog_fd.close()
         else:
